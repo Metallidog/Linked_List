@@ -60,17 +60,11 @@ class LinkedList(AbstractLinkedList):
     Implementation of an AbstractLinkedList inteface.
     """
     def __init__(self, elements=None):
+    	self.start = None
+    	self.end = None
         if elements:
-            self.start = Node(elements[0])
-            place_holder = self.start
-            for elem in elements[1:]:
-                current_node = Node(elem)
-                place_holder.next = current_node
-                place_holder = current_node
-            self.end = Node(elements[-1])
-        else:
-            self.start = None
-            self.end = None
+        	for elem in elements:
+        		self.append(elem)
                 
     def __str__(self):
         return str([n for n in self])
