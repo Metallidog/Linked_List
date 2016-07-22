@@ -37,6 +37,7 @@ class AbstractLinkedList(object):
     def pop(self, index=None):
         raise NotImplementedError()
 
+
 class Node(object):
     """
     Node class representing each of the linked nodes in the list.
@@ -52,78 +53,126 @@ class Node(object):
     def __eq__(self, other):
         return self.elem == other.elem
         
-    def __repr__(self):
-        return self.__str__()
+    repr = str
+
 
 class LinkedList(AbstractLinkedList):
     """
     Implementation of an AbstractLinkedList inteface.
     """
-    def __init__(self, elements=None):
-    	self.start = None
-    	self.end = None
-        if elements:
-        	for elem in elements:
-        		self.append(elem)
-                
-    def __str__(self):
-        return str([n for n in self])
-        
-    def __repr__(self):
-    	return self.__str__()
 
+    def __init__(self, elements=None):
+        if elements:
+            elements = list(elements)
+            self.length = len(elements)
+            self.end = self.start = Node(elements[0])
+            for elem in elements[1:]:
+                current_node = Node(elem)
+                self.end.next = current_node
+                self.end  = current_node
+        else:
+            self.start = None
+            self.end = None
+            self.length = 0
+            
+    def __str__(self):
+        LL_str = '['
+        for index, node in enumerate(self, start=1):
+            end = ']' if index == self.length else ', '
+            LL_str += "{}{}".format(node, end)
+        return LL_str if LL_str[-1]==']' else LL_str + ']' 
+        
+    __repr__ = __str__
+    
     def __len__(self):
         return self.count()
-
+    
     def __iter__(self):
         counter_node = self.start
         while counter_node:
-            yield counter_node
+            yield counter_node.elem
             counter_node = counter_node.next
 
     def __getitem__(self, index):
-        counter = 0
-        for node in self:
-            if counter == index:
-                return node
-            counter += 1
+        if index >= self.length or index < -self.length:
+            raise IndexError('LinkedList index out of range')
             
+        if isinstance(index, int) is False:
+            raise TypeError('LinkedList indices must be integers')
+            
+        place = self.start
+        loop_range = index if index >= 0 else index+self.length
+        for _ in range(loop_range):
+            place = place.next
+        return place.elem
+
     def __add__(self, other):
-        return self.__class__([n.elem for n in self] + [n.elem for n in other])    
+        other_node = other.start
+        self.length += len(other)
+        while other_node:
+            self.end = other_node
+            self.end = self.end.next 
+            other_node = other_node.next
+        return self     
         
     def __iadd__(self, other):
-        return self + other        
-        
+        return self + other
+
     def __eq__(self, other):
-    	
-        return [n for n in self] == [n for n in other] 
+        other_node = other.start
+        self_node = self.start
+        while self_node is not None:
+            if self_node == other_node:
+                other_node = other_node.next
+                self_node = self_node.next
+            else:
+                return False
+        return True
 
     def append(self, elem):
         new_end = Node(elem)
+        self.length += 1
         if self.end:
-            self.end.next = self.end = new_end
+            self.end.next = new_end
+            self.end = new_end
         else:
-            self.start = self.end = new_end
+            self.start = new_end
+            self.end = new_end
+        return self
 
     def count(self):
-        counter = 0
-        for item in self:
-            counter +=1
-        return counter
-
-    def pop(self, index = None):
-        if index is None:
-            index = self.count()-1
+        count = 0
+        dummy = self.start
+        while dummy is not None:
+            count += 1
+            dummy = dummy.next
+        return count
+        #return self.length
+    
+    def pop(self, index=None):
+        before = self.start
+ 
+        if index == None:
+            index = self.length-1
             
-        if len(self) == 0 or index >= self.count():
+        if index >= self.length or self.start is None:
             raise IndexError()
             
         if index == 0:
-            dummy = self.start.elem
+            temp = self.__getitem__(0)
             self.start = self.start.next
-            return dummy
-            
-        node = self[index-1]
-        popped_item = self[index].elem
-        node.next = self[index].next
-        return popped_item
+            self.length -= 1
+            return temp
+        
+        for _ in xrange(index-1):
+            before = before.next
+        
+        if self.length > 1:
+            remove = before.next
+            before.next = remove.next
+            self.length -= 1
+            return remove.elem
+        else:
+            self.start = None
+            self.length -= 1
+            return before.elem   
