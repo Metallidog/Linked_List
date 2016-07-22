@@ -94,17 +94,39 @@ class LinkedList(AbstractLinkedList):
             counter_node = counter_node.next
 
     def __getitem__(self, index):
-        if index >= self.length or index < -self.length:
-            raise IndexError('LinkedList index out of range')
-            
+        """
+        Supports index, negative indexing, and slicing
+        """
         if isinstance(index, int) is False:
-            raise TypeError('LinkedList indices must be integers')
+            if isinstance(index, slice) is False:
+                raise TypeError('LinkedList indices must be integers')
+            else:
+                return self.slicing(index)        
+        print (type(index))
+        if index >= self.length or index < -self.length:
+            raise IndexError('LinkedList index out of range') 
             
         place = self.start
         loop_range = index if index >= 0 else index+self.length
         for _ in range(loop_range):
             place = place.next
         return place.elem
+        
+    def slicing(self, slice_obj):
+        place = self.start
+        list_slice = LinkedList()
+        
+        for _ in range(slice_obj.start or 0):
+            if place:
+                place = place.next
+            else:
+                return list_slice
+                
+        for _ in range(slice_obj.start or 0, slice_obj.stop or self.length):
+            list_slice.append(place.elem)
+            place = place.next
+            
+        return list_slice
 
     def __add__(self, other):
         other_node = other.start
@@ -176,3 +198,11 @@ class LinkedList(AbstractLinkedList):
             self.start = None
             self.length -= 1
             return before.elem   
+            
+if __name__ == "__main__":
+    my_list = LinkedList([1,2,3,4,5,6,7])
+    print (my_list[-2])
+    print (my_list[:2])
+    print (my_list[3:])
+    print (my_list[1:6])
+    print (my_list[::2])
